@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>fetch redirect test</title>
+</head>
+<body>
+
+<h1>fetch redirect test</h1>
+
+<div style="display: flex">
+  <div id="default" style="width: 50%">
+    <h2>Default Behavior</h2>
+    <p><pre>fetch(..., { })</pre></p>
+
+    <h3>Resposne</h3>
+    <div class="response"></div>
+
+    <h3>Body</h3>
+    <pre class="body"></pre>
+  </div>
+
+  <div id="manual" style="width: 50%">
+    <h2>Manual Redirect Behavior</h2>
+    <p><pre>fetch(..., { redirect: 'manual' })</pre></p>
+
+    <h3>Resposne</h3>
+    <div class="response"></div>
+
+    <h3>Body</h3>
+    <pre class="body"></pre>
+  </div>
+
+<script>
+
+fetch('/redirect')
+  .then(resp => {
+    document.querySelector('#default > .response').appendChild(dump(resp));
+    return resp.text();
+  })
+  .then(body => {
+    document.querySelector('#default > .body').appendChild(document.createTextNode(body));
+  });
+
+fetch('/redirect', {
+  redirect: 'manual'
+})
+  .then(resp => {
+    document.querySelector('#manual > .response').appendChild(dump(resp));
+    return resp.text();
+  })
+  .then(body => {
+    document.querySelector('#manual > .body').appendChild(document.createTextNode(body));
+  });
+
+
+const dump = (obj, level=0) => {
+  const t = (str) => document.createTextNode(str);
+
+  const e = (tagName, ...args) => {
+    attrs = {};
+    if (args.length > 0 && typeof args[0] === 'object' && !(args[0] instanceof Node)) {
+      attrs = args.shift();
+    }
+
+    let parent = document.createElement(tagName);
+
+    for (let k of Object.keys(attrs)) {
+      parent.setAttribute(k, attrs[k]);
+    }
+
+    for (let c of args) {
+      parent.appendChild(typeof c === 'string' ? t(c) : c);
+    }
+    return parent;
+  }
+
+  if (obj === undefined) {
+    return e('em', 'undefined');
+  }
+
+  if (obj === null) {
+    return e('em', 'null');
+  }
+
+  if (Array.isArray(obj)) {
+    let items = obj.map(x => e('li', dump(x, level + 1)));
+    return e('div',
+      e('p', '['),
+      e('ol', ...items),
+      e('p', ']')
+    );
+  }
+
+  if (typeof obj === 'object') {
+    let props = [];
+    for (let k in obj) {
+      let keyNode = e('dt', t(k));
+      let value = dump(obj[k], level + 1);
+      let attrs = value.tagName === 'DL' ? { style: 'display: none' } : {};
+      let valueNode = e('dd', attrs, value);
+      keyNode.addEventListener('click', e => {
+        valueNode.style.display = valueNode.style.display === 'none' ? '' : 'none';
+      });
+      props.push(keyNode, keyNode, valueNode);
+    }
+    let node = e('dl', attrs, ...props);
+    return node;
+  }
+
+  if (typeof obj === 'function') {
+    return e('em', 'function () { ... }');
+  }
+
+  return document.createTextNode(JSON.stringify(obj));
+};
+
+</script>
+
+</body>
+</html>
