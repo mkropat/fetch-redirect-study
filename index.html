@@ -18,6 +18,9 @@
     <h3>Resposne</h3>
     <div class="response"></div>
 
+    <h3>Headers</h3>
+    <div class="headers"></div>
+
     <h3>Body</h3>
     <pre class="body"></pre>
   </div>
@@ -29,6 +32,9 @@
     <h3>Resposne</h3>
     <div class="response"></div>
 
+    <h3>Headers</h3>
+    <div class="headers"></div>
+
     <h3>Body</h3>
     <pre class="body"></pre>
   </div>
@@ -38,6 +44,7 @@
 fetch('/redirect')
   .then(resp => {
     document.querySelector('#default > .response').appendChild(dump(resp));
+    document.querySelector('#default > .headers').appendChild(dump(Array.from(resp.headers.entries())));
     return resp.text();
   })
   .then(body => {
@@ -49,6 +56,7 @@ fetch('/redirect', {
 })
   .then(resp => {
     document.querySelector('#manual > .response').appendChild(dump(resp));
+    document.querySelector('#manual > .headers').appendChild(dump(Array.from(resp.headers.entries())));
     return resp.text();
   })
   .then(body => {
